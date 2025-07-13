@@ -1,0 +1,48 @@
+@startuml
+
+!include <C4/C4_Container>
+
+Person(User, "Пользователь")
+Person(EmployeeBack, "Сотрудник бэк-офиса")
+Person(EmployeeFront, "Сотрудник фронт-офиса")
+
+System_Boundary(ABC_Boundary, "ABC - Банковская система") {
+    Container(ABC, "ABC", "Delphi")
+    ContainerDb(ABC_Db, "ABC база данных", "Oracle")
+    
+    Rel(ABC, ABC_Db, "Вызов процедур", "PL-SQL")
+}
+
+System_Boundary(InternetBankSystem, "Интернет-банк") {
+    Container(InternetBank_Monolith, "Сервис интернет-банк", "ASP.NET MVC 4.5", "Монолит")
+    ContainerDb(InternetBankDb, "База данных\n интернет-банка", "MSSQL")
+    
+    
+    Rel(InternetBank_Monolith, InternetBankDb, "")
+    
+}
+
+ContainerQueue(QueueBroker, "Брокер сообщений", "Kafka")
+
+System_Boundary(DepositSrvice, "Сервис депозитов") {
+    
+    Container(InternetBank_Deposit, "Микросервис депозитов", "ASP.NET Core 8")
+    ContainerDb(InternetBank_DepositDb, "База данных депозитов", "MSSQL")
+    
+    Rel(InternetBank_Deposit, InternetBank_DepositDb, "")
+    
+    Rel(InternetBank_Monolith, InternetBank_Deposit, "Делает запросы", "HTTP/JSON")
+}
+
+System_Ext(SMS, "СМС-Шлюз")
+
+Rel(User, InternetBank_Monolith, "Использует")
+Rel(EmployeeBack, ABC, "Использует")
+Rel(EmployeeFront, ABC, "Использует")
+
+Rel(ABC, SMS, "Отправка СМС")
+Rel(InternetBank_Deposit, QueueBroker, "Отправка заявок на депозит")
+Rel(InternetBank_Monolith, QueueBroker, "Отправка информации о платежах")
+Rel(QueueBroker, ABC, "Отправка заявок")
+
+@enduml

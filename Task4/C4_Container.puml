@@ -1,0 +1,13 @@
+@startuml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+title Сервис депозитов – компоненты (доплнение)
+
+Component(mail_sender,      "Email server", "SMTP", "Every 24h")
+Container_Boundary(api, "Сервис депозитов") {
+  Component(adapter,    "ExcelAdapter", "C# lib", "Парсит XLS")
+  Component(job,        "RatesExportJob", "CRON + Retry + Alerts on error", "CSV + e-mail")
+}
+
+Rel(job,   adapter,    "Чтение файла")
+Rel(job, mail_sender,  "Отправка на почту")
+@enduml

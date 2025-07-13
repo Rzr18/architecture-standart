@@ -1,0 +1,18 @@
+@startuml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+title Передача ставок – контекст
+
+Person(credit,  "Оператор КЦ")
+Person(cc_agent,  "Оператор КЦ")
+Person(ext_cc,    "Партнёрский КЦ (CRM Robot)")
+System(deposit_api, "Сервис депозитов", "REST /.NET 8")
+System_Ext(crm,   "CRM Колл-центр", "Spring Boot")
+System(mail,  "SMTP сервер", "Корп. почта")
+System(abs_rates, "Excel-файл ставок", "SMB share")
+
+Rel(cc_agent, crm,           "Консультация клиента")
+Rel(ext_cc,      crm,   "Выкладывает в CRM")
+Rel(deposit_api, abs_rates,  "Чтение XLS")
+Rel(deposit_api, mail,       "PGP-CSV daily e-mail")
+Rel(mail,     ext_cc,        "CSV attachment")
+@enduml
