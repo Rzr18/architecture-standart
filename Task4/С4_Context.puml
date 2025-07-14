@@ -1,0 +1,47 @@
+@startuml context
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+title Открытие депозита онлайн – контекст MVP
+
+Person(cc_agent,"Оператор кол-центра")
+Person_Ext(visitor, "Посетитель сайта")
+Person_Ext(client,  "Клиент интернет-банка")
+
+Person(fo_dep,  "Фронт-офис")
+Person(bo_dep,  "Бэк-офис депозитов")
+Person(bo_cred,  "Бэк-офис кредитов")
+
+System_Ext(sms,     "СМС-шлюз", "HTTP API")
+System_Ext(extCC,     "Партнерский Колл-центр")
+
+System_Boundary(bank, "Банк «Стандарт»") {
+
+  System(ib,          "Интернет-Банк", "ASP.NET MVC 4.5 / MS SQL")
+  System(site,    "Сайт", "PHP + React")
+  System_Ext(crm,     "CRM Колл-центр", "React / Spring Boot / PostgreSQL")
+  System(deposit_api, "Сервис депозитов", "REST / Spring Boot / OracleDB") #green
+
+  System(rates_api, "Сервис ставок", "REST / Spring Boot / OracleDB") #green
+
+  System(abs, "АБС", "Delphi / Spring Boot / Oracle DB") 
+}
+
+Rel_D(visitor,   site,        "Просмотр ставок, заявка (UC-1)", "HTTPS")
+Rel(site,      crm,         "Создать заявку",                    "REST/HTTPS")
+Rel(crm,      rates_api,         "Запрос ставок",                    "REST/HTTP")
+Rel(rates_api,   extCC,       "Выгрузка ставок",                    "SFTP")
+Rel_U(cc_agent,  crm,         "Обработка заявок")
+Rel(crm,       deposit_api, "POST /Согласование ставки",      "REST")
+Rel_D(client,    ib,          "Открыть депозит (UC-2)",         "HTTPS")
+Rel_D(ib,        deposit_api, "Запрос ставки депозита")
+Rel(deposit_api, abs,   "REST")
+Rel_U(bo_dep,    abs,     "Подтверждение ставки")
+Rel_U(bo_cred,    abs,     "Предоставление кредитной истории")
+Rel_U(bo_cred,    abs,     "загрузка ставок", "Excel")
+Rel_U(abs,    rates_api,     "загрузка ставок", "HTTP/Json")
+Rel_U(fo_dep,    abs,     "Внесение информации о договоре в систему/корректировка информации о клиенте(UC-3)")
+Rel_U(fo_dep,    client,     "Взаимодействие с клиентом")
+Rel_L(abs,   sms,         "Уведомление SMS",                "HTTP")
+Rel_L(crm,   sms,         "Уведомление SMS",                "HTTP")
+Rel_U(sms,   client,          "Направление кода подтверждения",                "SMS")
+
+@enduml
