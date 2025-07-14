@@ -15,7 +15,7 @@ Container_Boundary(rates_api, "Сервис ставок") {
 
 }
 
-Rel(email, job,    "Получение рассылки со ставками")
+Rel(email, job,    "Получение рассылки со ставками", "Excel")
 Rel(job, extCC,  "Отправка партнерам", "SFTP")
 Rel(crm, Rates_API,  "Запрос ставок", "HTTP/JSON")
 
