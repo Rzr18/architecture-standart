@@ -2,12 +2,24 @@
 !includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
 title Сервис депозитов – компоненты (доплнение)
 
-Component(mail_sender,      "Email server", "SMTP", "Every 24h")
-Container_Boundary(api, "Сервис депозитов") {
-  Component(adapter,    "ExcelAdapter", "C# lib", "Парсит XLS")
-  Component(job,        "RatesExportJob", "CRON + Retry + Alerts on error", "CSV + e-mail")
+System_Ext(extCC,     "Партнерский Колл-центр")
+System(email,     "Корпоративный EMAIL")
+System(crm,     "Корпоративный Колл-Центр")
+
+
+Container_Boundary(rates_api, "Сервис ставок") {
+  Component(job,        "RatesReader", "Получение ставок с корпоративной почты", "SMTP")
+
+  Component(Rates_API,  "API ставок", "SpringBoot", "Запись/чтение ставок по API")
+  ContainerDb(Rates_Db, "База данных ставок", "Oracle")
+
 }
 
-Rel(job,   adapter,    "Чтение файла")
-Rel(job, mail_sender,  "Отправка на почту")
+Rel(email, job,    "Получение рассылки со ставками")
+Rel(job, extCC,  "Отправка партнерам", "SFTP")
+Rel(crm, Rates_API,  "Запрос ставок", "HTTP/JSON")
+
+Rel(job, Rates_API,    "Регистрация ставок", "HTTPS/JSON")
+
+Rel(Rates_API,   Rates_Db,    "PL-SQL")
 @enduml
